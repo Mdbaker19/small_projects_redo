@@ -1,0 +1,17 @@
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+#help{
+    position: relative;
+    top: -55vh;
+    left: 45vw;
+    background-color: aliceblue;
+    color: black;
+    width: fit-content;
+}
+.helpBox{
+    display: flex;
+    flex-direction: column;
+}
