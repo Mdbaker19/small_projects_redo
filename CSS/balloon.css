@@ -6,3 +6,17 @@
 body{
     background-color: lightskyblue;
 }
+#diffArea{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+button{
+    width: 10vw;
+}
+p{
+    margin-right: 2em;
+}
+#score{
+    margin-right: 2em;
+}
