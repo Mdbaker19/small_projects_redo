@@ -1,3 +1,16 @@
 body{
     background-color: #3d587c;
+    padding: 2vh 2vw;
+}
+#game{
+    border: 5px solid aliceblue;
+    border-radius: 5px;
+}
+.gameInfo{
+    width: 25vw;
+    height: 10vh;
+    background-color: #FFFFE8;
+    color: #12355B;
+    display: flex;
+    justify-content: center;
 }
