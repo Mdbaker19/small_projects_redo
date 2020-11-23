@@ -3,6 +3,24 @@
     const c = document.getElementById("game");
     const cc = c.getContext("2d");
 
+    //===========NEED TO ADD:
+    //      AMMO BOX SPAWN AND CONTACT
+    //      SUPPLY BOX SPAWN AND WALL HEALTH REPAIR
+    //      BULLET CONTACT ON ZOMBIES
+    //      TURRET CONSTRUCTION
+    //
+
+    const gameInfoSpot = $(".gameInfo");
+
+    const pSpeed = 15;
+    const zSpeed = 20;
+    let ammo = [1,1,1];
+
+    let spawnX = c.width;
+    let spawnY = 0;
+    let shot = false;
+    let missed = false;
+
     window.addEventListener("keydown", function (e){
         if(e.key.includes("Arrow")){
             e.preventDefault();
@@ -10,25 +28,25 @@
         const dir = e.key.replace("Arrow", "");
         player.move(dir);
         if(e.key === " "){
-            player.shoot()
+            if(ammo.length > 0) {
+                bullet.updatePosition();
+                shot = true;
+                ammo.pop();
+            }
         }
     });
 
-    const gameInfoSpot = $(".gameInfo");
-
-    const pSpeed = 10;
-    const zSpeed = 20;
-    let ammo = [];
-    let wallHealth = 100;
-    let shot = false;
-
-    let spawnX = c.width;
-    let spawnY = 0;
 
     const wall = {
         x: 200,
         y: 0,
-        w: 15
+        w: 15,
+        health: 100,
+        broken: function (){
+            if(this.health < 1){
+                window.location.reload();
+            }
+        }
     }
 
     const zombie = {
@@ -41,7 +59,7 @@
             if(this.x > wall.x + wall.w + (this.arm * 1.25)) {
                 this.x -= zSpeed;
             } else {
-                wallHealth -= 1;
+                wall.health -= 1;
             }
         }
     }
@@ -78,17 +96,34 @@
             }
         },
         shoot: function (){
-            shot = true;
+            if(shot) {
+                circle(bullet.x, bullet.y, bullet.s, "#ffffff");
+                bullet.travel();
+            } if(missed){
+                shot = false;
+            }
         }
     }
 
-    let shootingSpot;
-
-
-
-    function genRanNum(){
-        return ~~(Math.random() * 100);
+    const bullet = {
+        x: player.x + (player.head/2),
+        y: player.y + (player.head * 1.2),
+        s: 5,
+        travel: function (){
+            if(this.x < c.width){
+                missed = false;
+                this.x += 75;
+            } else {
+                missed = true;
+            }
+        },
+        updatePosition: function (){
+            this.x = player.x + (player.head/2);
+            this.y = player.y + (player.head * 1.2);
+        }
     }
+
+
 
 
     const ammoBox = {
@@ -103,26 +138,17 @@
 
     }
 
-    const bullet = {
+    const turret = {
 
     }
+
 
     setInterval(load, 50);
 
     function load() {
         draw();
-        if (!shot) {
-            shootingSpot = [(player.x + (player.head / 2)), (player.y + (player.head * 1.2))];
-        } else {
-            circle(shootingSpot[0], shootingSpot[1], 5, "#ffffff");
-            if (shootingSpot[0] < c.width) {
-                shootingSpot[0] += 75;
-            } else if((shootingSpot[0] < zombie.x - zombie.r && shootingSpot[0] > zombie.x + zombie.r) && (shootingSpot[1] - 5 > zombie.y + zombie.head && shootingSpot[1] - 5 < zombie.y + zombie.size)) {
-                shot = false;
-                console.log("hit");
-            } else
-             shot = false;
-        }
+        player.shoot();
+        wall.broken();
     }
 
     // setInterval(logZombies, 500);
@@ -139,7 +165,7 @@
     }
     function updateStats(){
         gameInfoSpot[0].innerHTML = render();
-        gameInfoSpot[1].innerHTML = "can build w/e"
+        gameInfoSpot[1].innerHTML = "have supplies to build turrets"
     }
 
     function draw(){
@@ -171,13 +197,15 @@
     function render(){
         let html = `<div>`;
         html+=`<h5>Ammo Left: ${ammo.length}</h5>`;
-        html+=`<h5>Wall Health: ${wallHealth}</h5>`;
+        html+=`<h5>Wall Health: ${wall.health}</h5>`;
         html+=`</div>`;
         return html;
     }
 
+
+    //=======MAKE AN ARRAY OF ZOMBIE POSITIONS THAT ARE RANDOM=========//
     function createZombies(){
-        for(let i = 75; i < c.height; i += 75){
+        for(let i = 75; i < c.height; i+=75){
             fill(zombie.x, zombie.y + i, zombie.size, zombie.size, "#2e632e");
             circle(zombie.x + zombie.size/2, zombie.y - zombie.r + i, zombie.r, "#178a17");
             circle(zombie.x + zombie.r/1.5 , zombie.y + i - zombie.r / .75, 2, "#ea0b0b");
