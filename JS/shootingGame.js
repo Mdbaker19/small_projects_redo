@@ -14,7 +14,7 @@
 
     const pSpeed = 15;
     const zSpeed = 20;
-    let ammo = [1,1,1];
+    let ammo = [1,1,1,1,1,1,1,1,1,1,1,1,1,1];
 
     let spawnX = c.width;
     let spawnY = 0;
@@ -45,7 +45,7 @@
             if(ammo.length > 0) {
                 bullet.updatePosition();
                 shot = true;
-                // ammo.pop();
+                ammo.pop();
             }
         }
     });
@@ -173,7 +173,7 @@
         c: "#af7a28"
     }
 
-    function forOtherAnimate(){
+    function drawTurretsAndBoxes(){
         fill(ammoBox.x, ammoBox.y, boxSize, boxSize, ammoBox.c);
         circle(ammoBox.x + 23, ammoBox.y + 17.5, 4.5, "#c95d25");
         fill(ammoBox.x + 8, ammoBox.y + 12.5, 15, 10, "#c2a145");
@@ -200,34 +200,29 @@
 
     function load() {
         draw();
-        forOtherAnimate();
         player.shoot();
         wall.broken();
     }
 
-    // setInterval(logZombies, 500);
-
-    function logZombies(){
-        console.log(zombie.x);
-    }
 
     setInterval(gameFunctions, 100);
 
     function gameFunctions() {
         updateStats();
-        moveAll();
+        moveZombies();
         zHit();
     }
     function updateStats(){
         gameInfoSpot[0].innerHTML = render();
-        gameInfoSpot[1].innerHTML = "have supplies to build turrets(for now, key '1' builds turret 1 and key '2' " +
-            "builds turret 2 || player supplies set to 2 || ammo is infinite for now too || wall health is very" +
-            "High and supply boxes are infinite)"
+        gameInfoSpot[1].innerHTML = "Space Bar: Shoots, Need supplies to build turrets(Key '1' builds turret 1 and Key '2' " +
+            "for turret 2 || player supplies set to 2 for now || wall health is very" +
+            " High and supply boxes are infinite for now)";
     }
 
     function draw(){
         fill(0, 0, c.width, c.height, "#0c0808");
         createZombies();
+        drawTurretsAndBoxes();
         fill(wall.x, wall.y, wall.w, c.height, "#606060");//divider line
         fill(player.x - player.head/1.5, player.y + player.bodyH, 5, player.leg, "#123f67");//left leg
         fill(player.x + player.head/3, player.y + player.bodyH, 5, player.leg, "#123f67");//right leg
@@ -263,7 +258,7 @@
     //=======MAKE AN ARRAY OF ZOMBIE POSITIONS THAT ARE RANDOM=========//
     let zArr = [];
 
-    function makeZ(){
+    function createZombiesArray(){
         for(let i = 0; i <= 15; i++){
             let zObj = {
                 x: zombie.x + (~~(Math.random() * 100) - 100),
@@ -272,7 +267,7 @@
             zArr.push(zObj);
         }
     }
-    makeZ();
+    createZombiesArray();
 
 
     function createZombies(){
@@ -284,7 +279,7 @@
         });
     }
 
-    function moveAll(){
+    function moveZombies(){
         zArr.forEach(z => {
             if(z.x > 230) {
                 z.x -= zSpeed;
@@ -297,9 +292,11 @@
     function zHit(){
         zArr.forEach(z => {
             if(contact(bullet.x, bullet.y, bullet.s, z.x, z.y, zombie.size, zombie.r)){
-                z.x = spawnX;
+                z.x = spawnX + (~~(Math.random() * 100) - 100);
+                z.y =  ~~(Math.random() * 700) + 50;
                 bullet.x = null;
                 bullet.y = null;
+                ammo.push("a");
             }
         })
     }
