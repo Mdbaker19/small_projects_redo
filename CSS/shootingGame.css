@@ -1,6 +1,6 @@
 body{
     background-color: #3d587c;
-    padding: 2vh 2vw;
+    padding: 0 2vw;
 }
 #game{
     border: 5px solid aliceblue;
@@ -9,7 +9,7 @@ body{
 .gameContent{
     width: 75vw;
     margin: 0 auto;
-    height: 10vh;
+    height: fit-content;
     background-color: #FFFFE8;
     color: #12355B;
     display: flex;
@@ -18,4 +18,17 @@ body{
 .gameInfo{
     width: 50%;
     border: 1px solid black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.content{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.item{
+    margin: 0;
 }
