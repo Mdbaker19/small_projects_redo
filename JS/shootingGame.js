@@ -20,8 +20,22 @@
     let spawnY = 0;
     let shot = false;
     let missed = false;
+    let turret1Built = false;
+    let turret2Built = false;
 
     window.addEventListener("keydown", function (e){
+        if(e.key === "1"){
+            if(player.supplies > 0) {
+                turret1Built = true;
+                player.supplies--;
+            }
+        }
+        if(e.key === "2"){
+            if(player.supplies > 0) {
+                turret2Built = true;
+                player.supplies--;
+            }
+        }
         if(e.key.includes("Arrow")){
             e.preventDefault();
         }
@@ -40,6 +54,10 @@
         return ((objY + objS > zY - (zHS*2) && objY < zY + zS) && (objX))
     }
 
+    function grabBox(px, py, pBodyH, pBodyW, pLegs, pHead, bx, by, boxS){
+
+    }
+
 
     const wall = {
         x: 200,
@@ -56,23 +74,9 @@
     const zombie = {
         x: spawnX,
         y: spawnY,
-        // y: 600,
         r: 8,
         size: 15,
-        arm: 10,
-        traverse: function (){
-            if(this.x > wall.x + wall.w + (this.arm * 1.25)) {
-                this.x -= zSpeed;
-            } else {
-                wall.health -= 1;
-            }
-        },
-        shotDown: function (){
-            if(contact(bullet.x, bullet.y, bullet.s, this.x, this.y, this.size, this.r)){
-                console.log("hit");
-                this.x = spawnX;
-            }
-        }
+        arm: 10
     }
 
     const player = {
@@ -82,7 +86,7 @@
         bodyH: 30,
         bodyW: 20,
         leg: 25,
-        supplies: 0,
+        supplies: 2,
         move: function (dir){
             switch (dir){
                 case "Up":
@@ -118,8 +122,8 @@
     }
 
     const bullet = {
-        x: player.x + (player.head/2),
-        y: player.y + (player.head * 1.2),
+        x: null,
+        y: null,
         s: 5,
         travel: function (){
             if(this.x < c.width){
@@ -171,22 +175,24 @@
 
     function forOtherAnimate(){
         fill(ammoBox.x, ammoBox.y, boxSize, boxSize, ammoBox.c);
-        fill(ammoBox.x + 5, ammoBox.y + 5, 5, 5, "#000000");
-        fill(ammoBox.x + 10, ammoBox.y + 10, 5, 5, "#000000");
-        fill(ammoBox.x + 20, ammoBox.y + 20, 5, 5, "#000000");
-        fill(ammoBox.x + 25, ammoBox.y + 25, 5, 5, "#000000");
+        circle(ammoBox.x + 23, ammoBox.y + 17.5, 4.5, "#c95d25");
+        fill(ammoBox.x + 8, ammoBox.y + 12.5, 15, 10, "#c2a145");
         fill(repairKit.x, repairKit.y, boxSize, boxSize, repairKit.c);
         fill(repairKit.x + boxSize/2 - 2.5, repairKit.y, 5, boxSize, "#ffffff");
         fill(repairKit.x, repairKit.y + boxSize/2 - 2.5, boxSize, 5, "#ffffff");
         fill(supplies.x, supplies.y, boxSize, boxSize, supplies.c);
         fill(supplies.x + boxSize/4, supplies.y + boxSize/5, boxSize/2, boxSize/3.5, "#423333");
         fill(supplies.x + boxSize/2.5, supplies.y + boxSize/5, boxSize/5, boxSize/1.5, "#423333");
-        fill(turret1.x, turret1.y, boxSize, boxSize, turret1.c);
-        fill(turret1.x + boxSize, turret1.y + boxSize / 2 - 5, boxSize / 1.5, 10, turret1.c);
-        fill(turret1.x + boxSize * 2 - 18, turret1.y + boxSize / 2 - 5, 4, 10, "#000000");
-        fill(turret2.x, turret2.y, boxSize, boxSize, turret2.c);
-        fill(turret2.x + boxSize, turret2.y + boxSize/2 -5, boxSize/1.5, 10, turret2.c);
-        fill(turret2.x + boxSize * 2- 18, turret2.y + boxSize/2 -5, 4, 10, "#000000");
+        if(turret1Built) {
+            fill(turret1.x, turret1.y, boxSize, boxSize, turret1.c);
+            fill(turret1.x + boxSize, turret1.y + boxSize / 2 - 5, boxSize / 1.5, 10, turret1.c);
+            fill(turret1.x + boxSize * 2 - 18, turret1.y + boxSize / 2 - 5, 4, 10, "#000000");
+        }
+        if(turret2Built) {
+            fill(turret2.x, turret2.y, boxSize, boxSize, turret2.c);
+            fill(turret2.x + boxSize, turret2.y + boxSize / 2 - 5, boxSize / 1.5, 10, turret2.c);
+            fill(turret2.x + boxSize * 2 - 18, turret2.y + boxSize / 2 - 5, 4, 10, "#000000");
+        }
     }
 
 
@@ -197,7 +203,6 @@
         forOtherAnimate();
         player.shoot();
         wall.broken();
-        zombie.shotDown();
     }
 
     // setInterval(logZombies, 500);
@@ -209,18 +214,20 @@
     setInterval(gameFunctions, 100);
 
     function gameFunctions() {
-        zombie.traverse();
         updateStats();
+        moveAll();
+        zHit();
     }
     function updateStats(){
         gameInfoSpot[0].innerHTML = render();
-        gameInfoSpot[1].innerHTML = "have supplies to build turrets"
+        gameInfoSpot[1].innerHTML = "have supplies to build turrets(for now, key '1' builds turret 1 and key '2' " +
+            "builds turret 2 || player supplies set to 2 || ammo is infinite for now too || wall health is very" +
+            "High and supply boxes are infinite)"
     }
 
     function draw(){
         fill(0, 0, c.width, c.height, "#0c0808");
         createZombies();
-        // createZombie();
         fill(wall.x, wall.y, wall.w, c.height, "#606060");//divider line
         fill(player.x - player.head/1.5, player.y + player.bodyH, 5, player.leg, "#123f67");//left leg
         fill(player.x + player.head/3, player.y + player.bodyH, 5, player.leg, "#123f67");//right leg
@@ -245,33 +252,56 @@
     }
 
     function render(){
-        let html = `<div class="content">`;
-        html+=`<h5 class="item">Ammo Left: ${ammo.length}</h5>`;
-        html+=`<h5 class="item">Wall Health: ${wall.health}</h5>`;
-        html+=`<h5 class="item">Supplies: ${player.supplies}</h5>`;
-        html+=`</div>`;
-        return html;
+        return `<div class="content">
+                    <h5 class="item">Ammo Left: ${ammo.length}</h5>
+                    <h5 class="item">Wall Health: ${wall.health}</h5>
+                    <h5 class="item">Supplies: ${player.supplies}</h5>
+                </div>`;
     }
 
 
     //=======MAKE AN ARRAY OF ZOMBIE POSITIONS THAT ARE RANDOM=========//
-    function createZombies(){
-        for(let i = 50; i < c.height; i+=75){
-            fill(zombie.x, zombie.y + i, zombie.size, zombie.size, "#2e632e");
-            circle(zombie.x + zombie.size/2, zombie.y - zombie.r + i, zombie.r, "#178a17");
-            circle(zombie.x + zombie.r/1.5 , zombie.y + i - zombie.r / .75, 2, "#ea0b0b");
-            fill(zombie.x - zombie.arm, zombie.y + i, zombie.arm, zombie.arm/3, "#b08a2a");
+    let zArr = [];
+
+    function makeZ(){
+        for(let i = 0; i <= 15; i++){
+            let zObj = {
+                x: zombie.x + (~~(Math.random() * 100) - 100),
+                y: ~~(Math.random() * 700) + 50
+        }
+            zArr.push(zObj);
         }
     }
-
-    // function createZombie(){
-    //     fill(zombie.x, zombie.y, zombie.size, zombie.size, "#2e632e");
-    //     circle(zombie.x + zombie.size/2, zombie.y - zombie.r, zombie.r, "#178a17");
-    //     circle(zombie.x + zombie.r/1.5 , zombie.y - zombie.r / .75, 2, "#ea0b0b");
-    //     fill(zombie.x - zombie.arm, zombie.y, zombie.arm, zombie.arm/3, "#b08a2a");
-    // }
+    makeZ();
 
 
+    function createZombies(){
+        zArr.forEach(z => {
+            fill(z.x, z.y, zombie.size, zombie.size, "#2e632e");
+            circle(z.x + zombie.size/2, z.y - zombie.r, zombie.r, "#178a17");
+            circle(z.x + zombie.r/1.5 , z.y - zombie.r / .75, 2, "#ea0b0b");
+            fill(z.x - zombie.arm, z.y, zombie.arm, zombie.arm/3, "#b08a2a");
+        });
+    }
 
+    function moveAll(){
+        zArr.forEach(z => {
+            if(z.x > 230) {
+                z.x -= zSpeed;
+            } else {
+                wall.health -= 1;
+            }
+        });
+    }
+
+    function zHit(){
+        zArr.forEach(z => {
+            if(contact(bullet.x, bullet.y, bullet.s, z.x, z.y, zombie.size, zombie.r)){
+                z.x = spawnX;
+                bullet.x = null;
+                bullet.y = null;
+            }
+        })
+    }
 
 })();
