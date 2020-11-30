@@ -4,10 +4,9 @@
     const cc = c.getContext("2d");
 
     //===========NEED TO ADD:
-    //      AMMO BOX SPAWN AND CONTACT
-    //      SUPPLY BOX SPAWN AND WALL HEALTH REPAIR
-    //      BULLET CONTACT ON ZOMBIES
-    //      TURRET CONSTRUCTION
+    //      BOX SPAWN ON CONDITIONAL
+    //      MORE THAN ONE BULLET AT A TIME
+    //      TURRET AI
     //
 
     const gameInfoSpot = $(".gameInfo");
@@ -180,9 +179,9 @@
         c: "#536abd",
         used: function (){
             if(grabBox(player.x, player.y, player.bodyH, player.bodyW, player.leg, player.head, this.x, this.y, boxSize)){
-                // if(player.supplies < 3){
+                if(player.supplies < 3){
                     player.supplies++;
-                // }
+                }
             }
         }
     }
@@ -291,8 +290,6 @@
                 </div>`;
     }
 
-
-    //=======MAKE AN ARRAY OF ZOMBIE POSITIONS THAT ARE RANDOM=========//
 
     function createZombiesArray(){
         for(let i = 0; i < amountOfZombies; i++){
