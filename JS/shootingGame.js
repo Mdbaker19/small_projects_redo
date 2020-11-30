@@ -4,10 +4,10 @@
     const cc = c.getContext("2d");
 
     //===========NEED TO ADD:
-    //      BOX SPAWN ON CONDITIONAL
-    //      MORE THAN ONE BULLET AT A TIME
+    //      AMMO AND HEALTH SPAWN ON CONDITIONAL POSSIBLY
+    //      MORE THAN ONE BULLET AT A TIME ---> REMOVE PLAYER.SHOOT FROM LOAD, CREATE A BULLET ARRAY FOR EACH ONE TO BE
+    //      ANIMATED AT A TIME
     //      TURRET AI
-    //
 
     const gameInfoSpot = $(".gameInfo");
 
@@ -25,7 +25,7 @@
 
     let healthGrabbed = false;
     let ammoGrabbed = false;
-    let suppliesGrabbed = false;
+    let suppliesGrabbed = true;
 
     let zArr = [];
     let amountOfZombies = 1;
@@ -98,14 +98,16 @@
         move: function (dir){
             switch (dir){
                 case "Up":
-                    if(this.y > this.head){
-                        this.y -= pSpeed;
+                    if(this.y < 0){
+                        this.y = c.height;
                     }
+                        this.y -= pSpeed;
                     break;
                 case "Down":
-                    if(this.y < c.height - this.head -this.bodyH - this.leg){
-                        this.y += pSpeed;
+                    if(this.y > c.height){
+                        this.y = 0;
                     }
+                    this.y += pSpeed;
                     break;
                 case "Left":
                     if(this.x > this.head){
@@ -121,11 +123,21 @@
         },
         shoot: function (){
             if(shot) {
+                bulletArr.push(1);
                 circle(bullet.x, bullet.y, bullet.s, "#ffffff");
+                // createBullet();
                 bullet.travel();
             } if(missed){
                 shot = false;
             }
+        }
+    }
+
+    let bulletArr = [];
+    function createBullet(){
+        bullet.updatePosition();
+        for(let i = 0; i < bulletArr.length; i++){
+            circle(bullet.x, bullet.y, bullet.s, "#ffffff");
         }
     }
 
@@ -174,14 +186,17 @@
     }
 
     const supplies = {
-        x: 50,
-        y: 200,
-        c: "#536abd",
+        x: null,
+        y: null,
+        c: "#3f61d8",
         used: function (){
             if(grabBox(player.x, player.y, player.bodyH, player.bodyW, player.leg, player.head, this.x, this.y, boxSize)){
                 if(player.supplies < 3){
                     player.supplies++;
                 }
+                suppliesGrabbed = true;
+                this.x = null;
+                this.y = null;
             }
         }
     }
@@ -206,13 +221,13 @@
         }
         if(!healthGrabbed) {
             fill(repairKit.x, repairKit.y, boxSize, boxSize, repairKit.c);
-            fill(repairKit.x + boxSize / 2 - 2.5, repairKit.y, 5, boxSize, "#ffffff");
-            fill(repairKit.x, repairKit.y + boxSize / 2 - 2.5, boxSize, 5, "#ffffff");
+            fill(repairKit.x + boxSize / 2 - 1.5, repairKit.y + 2.5, 4, boxSize - 5, "#ffffff");
+            fill(repairKit.x + 2.5, repairKit.y + boxSize / 2 - 1.5, boxSize - 5, 4, "#ffffff");
         }
         if(!suppliesGrabbed) {
             fill(supplies.x, supplies.y, boxSize, boxSize, supplies.c);
+            fill(supplies.x + boxSize / 2.5, supplies.y + boxSize / 5, boxSize / 5, boxSize / 1.5, "#302222");
             fill(supplies.x + boxSize / 4, supplies.y + boxSize / 5, boxSize / 2, boxSize / 3.5, "#423333");
-            fill(supplies.x + boxSize / 2.5, supplies.y + boxSize / 5, boxSize / 5, boxSize / 1.5, "#423333");
         }
         if(turret1Built) {
             fill(turret1.x, turret1.y, boxSize, boxSize, turret1.c);
@@ -249,7 +264,7 @@
     function updateStats(){
         gameInfoSpot[0].innerHTML = render();
         gameInfoSpot[1].innerHTML = "Space Bar: Shoots, Need supplies to build turrets(Key '1' builds turret 1 and Key '2' " +
-            "for turret 2) || grab ammo, supplies and health from the boxes";
+            "for turret 2) || grab ammo, supplies and health from the boxes || Supplies every 10 kills";
     }
 
     function draw(){
@@ -338,6 +353,11 @@
                 bullet.y = -100;
                 if(killCount % 2 === 0) {
                     createZombiesArray();
+                }
+                if(killCount % 10 === 0){
+                    supplies.x = 50;
+                    supplies.y = 200;
+                    suppliesGrabbed = false;
                 }
             }
         })
