@@ -11,8 +11,8 @@
 
 
     const gameInfoSpot = $(".gameInfo");
+    let gameOver = false;
 
-    const pSpeed = 25;
     let ammo = [1,1,1,1,1,1,1,1,1,1];
 
     let spawnX = c.width;
@@ -24,7 +24,7 @@
 
     let wallBroke = false;
 
-    let healthGrabbed = false;
+    let healthGrabbed = true;
     let ammoGrabbed = false;
     let suppliesGrabbed = true;
 
@@ -47,22 +47,39 @@
                 player.supplies--;
             }
         }
-        if(e.key.includes("Arrow")){
-            e.preventDefault();
-        }
-        const dir = e.key.replace("Arrow", "");
-        player.move(dir);
-        if(e.key === " "){
-            if(ammo.length > 0) {
-                bullet.updatePosition();
-                shot = true;
-                ammo.pop();
-                $(".ammoArea").css("backgroundColor", "#FFFFE8");
-            } else {
-                $(".ammoArea").css("backgroundColor", "#cd5137");
-            }
+    });
+
+    window.addEventListener("click", function (){
+        if(ammo.length > 0) {
+            bullet.updatePosition();
+            shot = true;
+            ammo.pop();
+            $(".ammoArea").css("backgroundColor", "#FFFFE8");
+        } else {
+            $(".ammoArea").css("backgroundColor", "#cd5137");
         }
     });
+
+    let mouse = {
+        x: null,
+        y: null
+    }
+    window.addEventListener("mousemove", function (e){
+        mouse.x = e.x - player.bodyW/2;
+        mouse.y = e.y - player.head;
+        if(gameOver){
+            mouse.x = 100;
+            mouse.y = 400;
+        }
+        if(player.x > mouse.x){
+            player.x = mouse.x;
+        } else if(player.x < wall.x){
+            player.x += 4;
+        }
+        if(mouse.y < 799) {
+            player.y = mouse.y
+        }
+    })
 
     function contact(objX, objY, objS, zX, zY, zS, zHS){
         return ((objY + objS > zY - (zHS*2) && objY < zY + zS) && (objX + objS > zX))
@@ -83,7 +100,7 @@
         x: 200,
         y: 0,
         w: 15,
-        health: 2000,
+        health: 500,
         broken: function (){
             if(this.health < 1){
                 wallBroke = true;
@@ -107,36 +124,11 @@
         bodyW: 20,
         leg: 25,
         supplies: 0,
-        move: function (dir){
-            switch (dir){
-                case "Up":
-                    if(this.y < 0){
-                        this.y = c.height;
-                    }
-                        this.y -= pSpeed;
-                    break;
-                case "Down":
-                    if(this.y > c.height){
-                        this.y = 0;
-                    }
-                    this.y += pSpeed;
-                    break;
-                case "Left":
-                    if(this.x > this.head){
-                        this.x -= pSpeed;
-                    }
-                    break;
-                case "Right":
-                    if(this.x + this.head < wall.x){
-                        this.x += pSpeed;
-                    }
-                    break;
-            }
-        },
         shoot: function (){
             if(shot) {
                 bulletArr.push(1);
                 circle(bullet.x, bullet.y, bullet.s, "#ffffff");
+                // bullet.updatePosition();
                 // createBullet();
                 bullet.travel();
             } if(missed){
@@ -156,7 +148,6 @@
     //CURRENTLY NOT IN USE//
     let bulletArr = [];
     function createBullet(){
-        bullet.updatePosition();
         for(let i = 0; i < bulletArr.length; i++){
             circle(bullet.x, bullet.y, bullet.s, "#ffffff");
         }
@@ -199,6 +190,7 @@
         used: function (){
             if(grabBox(player.x, player.y, player.bodyH, player.bodyW, player.leg, player.head, this.x, this.y, boxSize)){
                 ammo.push(1);
+                updateStats();
             }
         }
     }
@@ -210,7 +202,8 @@
         used: function (){
             if(grabBox(player.x, player.y, player.bodyH, player.bodyW, player.leg, player.head, this.x, this.y, boxSize)){
                 wall.health+=500;
-                suppliesGrabbed = true;
+                updateStats();
+                healthGrabbed = true;
                 this.x = 200000;
                 this.y = 100000;
             }
@@ -224,6 +217,7 @@
         used: function (){
             if(grabBox(player.x, player.y, player.bodyH, player.bodyW, player.leg, player.head, this.x, this.y, boxSize)){
                 if(player.supplies < 3){
+                    updateStats();
                     player.supplies++;
                 }
                 suppliesGrabbed = true;
@@ -290,6 +284,7 @@
                     inTurret2Sights = true;
                 }
                 killCount++;
+                updateStats();
                 setTimeout(function (){
                     z.x = spawnX + (~~(Math.random() * 100) - 100);
                     z.y =  ~~(Math.random() * 700) + 50;
@@ -424,14 +419,18 @@
         ammoBox.used();
         repairKit.used();
         supplies.used();
-        updateStats();
         moveZombies();
         zHit(bullet);
     }
+    initialHTML();
     function updateStats(){
         gameInfoSpot[0].innerHTML = render();
-        gameInfoSpot[1].innerHTML = "Space Bar: Shoots, Need supplies to build turrets(Key '1' builds turret 1 and Key '2' " +
-            "for turret 2) || grab ammo, supplies and health from the boxes || Supplies every 10 kills || Health every 5 kills for 500 wall health";
+    }
+    function initialHTML(){
+        gameInfoSpot[0].innerHTML = render();
+        gameInfoSpot[1].innerHTML = "Space Bar: Shoots, Need supplies to build turrets('1' builds turret 1 '2' " +
+            "turret 2) || grab ammo, supplies and health from the boxes || Supplies every 10 kills || Health every 5 kills| " +
+            "Every zombie killed spawns a new one, every 2 killed increases max zombies by 1";
     }
 
     function draw(){
@@ -512,19 +511,27 @@
                 z.x -= zSpeed;
             } else {
                 if(!wallBroke) {
+                    updateStats();
                     wall.health -= 1;
                 } else z.x -= zSpeed;
             }
             if(z.x < 0){
-                location.reload();
+                gameOver = true;
+                gameInfoSpot[1].innerText = `GAME OVER ${killCount} ZOMBIES KILLED`;
+                gameInfoSpot[0].innerHTML = `<button id="restart">New Game(click a few times)</button>`;
+                $("#restart").on("click", function (){
+                    window.location.reload();
+                });
             }
         });
     }
+
 
     function zHit(obj){
         zArr.forEach(z => {
             if(contact(obj.x, obj.y, obj.s, z.x, z.y, zombie.size, zombie.r)){
                 killCount++;
+                updateStats();
                 z.x = spawnX + (~~(Math.random() * 100) - 100);
                 z.y =  ~~(Math.random() * 700) + 50;
                 bullet.x = 1000;
