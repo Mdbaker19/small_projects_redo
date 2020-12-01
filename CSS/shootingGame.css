@@ -7,8 +7,7 @@ body{
     border-radius: 5px;
 }
 .gameContent{
-    width: 75vw;
-    margin: 0 auto;
+    width: 50vw;
     height: fit-content;
     background-color: #FFFFE8;
     color: #12355B;
@@ -47,6 +46,10 @@ body{
         width: 750px;
         height: 500px;
     }
+    .gameContent{
+        width: 75vw;
+        margin: 0 auto;
+    }
 }
 @media screen and (min-width: 900px){
     #game{
@@ -54,16 +57,21 @@ body{
         height: 600px;
     }
 }
-@media screen and (min-width: 1200px){
-    #game{
-        width: 1150px;
-        height: 750px;
-    }
-}
 @media screen and (min-width: 1024px){
     #game{
         width: 1000px;
         height: 800px;
+    }
+}
+@media screen and (min-width: 1130px){
+    #game{
+        width: 1120px;
+    }
+}
+@media screen and (min-width: 1200px){
+    #game{
+        width: 1150px;
+        height: 750px;
     }
 }
 @media screen and (min-width: 1400px){
