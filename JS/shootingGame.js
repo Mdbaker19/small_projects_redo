@@ -1,11 +1,10 @@
 (function (){
-    //1500, 800
     const c = document.getElementById("game");
     const cc = c.getContext("2d");
 
-    //===========NEED TO ADD:
-    //      MORE THAN ONE BULLET AT A TIME ---> REMOVE PLAYER.SHOOT FROM LOAD, CREATE A BULLET ARRAY FOR EACH ONE TO BE
-    //      ANIMATED AT A TIME
+    //=========NEEDING FIXED======//
+    //----PLAYER BULLETS, ALLOW MULTIPLE SHOTS AT A TIME
+    //===========================//
 
 
 
@@ -15,7 +14,7 @@
 
     let ammo = [1,1,1,1,1,1,1,1,1,1];
 
-    let spawnX = c.width;
+    let spawnX = c.width + 100;
     let spawnY = 0;
     let shot = false;
     let missed = false;
@@ -216,10 +215,8 @@
         c: "#3f61d8",
         used: function (){
             if(grabBox(player.x, player.y, player.bodyH, player.bodyW, player.leg, player.head, this.x, this.y, boxSize)){
-                if(player.supplies < 3){
-                    updateStats();
-                    player.supplies++;
-                }
+                updateStats();
+                player.supplies++;
                 suppliesGrabbed = true;
                 this.x = null;
                 this.y = null;
@@ -243,21 +240,48 @@
         turret2.auto();
     }
 
+    let goUp1 = true;
+    let goDown1 = false;
     const turret1 = {
         x: 215,
         y: 125,
         c: "#af7a28",
         bullets: [],
+        scan: function (){
+            if(turret1Built) {
+                if (this.y > 100 && goUp1) {
+                    goUp1 = true;
+                    goDown1 = false;
+                    this.y -= 2;
+                    this.laser.y -= 2;
+                } else {
+                    goUp1 = false;
+                    goDown1 = true;
+                }
+                if(this.y < 300 && goDown1){
+                    goUp1 = false;
+                    goDown1 = true;
+                    this.y += 2;
+                    this.laser.y += 2;
+                } else {
+                    goDown1 = false;
+                    goUp1 = true;
+                }
+            } else {
+                this.x = 215;
+                this.y = 125;
+            }
+        },
         auto: function (){
             if(turret1Built){
-                for(let i = 0; i < 10; i++) {
+                for(let i = 0; i < 5; i++) {
                     this.bullets.push(i);
                 }
             }
         },
         laser: {
-            x: 215,
-            y: 130,
+            x: 225,
+            y: 135,
             w: 1300,
             h: 10
         },
@@ -266,9 +290,8 @@
                 this.bullets.pop();
                 inTurret1Sights = false;
                 tBullet.updatePosition(this);
-                fill(this.laser.x, this.laser.y,this.laser.w, this.laser.h, "#ffffff");
+                fill(this.laser.x + boxSize, this.laser.y,this.laser.w, this.laser.h, "#ffffff");
                 tBullet.travel();
-                console.log(`T1 bullets: ${this.bullets.length}`);
             } else {
                 turret1Built = false;
             }
@@ -277,8 +300,8 @@
 
     function turretShootingAtZombies(turret){
         zArr.forEach((z) => {
-            if(z.y + zombie.size > turret.y && z.y < turret.y + boxSize){
-                if(turret.y < 150){
+            if(z.y + zombie.size > turret.y && z.y < turret.y + boxSize && z.x > 230){
+                if(turret.y < 300){
                     inTurret1Sights = true;
                 } else {
                     inTurret2Sights = true;
@@ -304,16 +327,41 @@
         y: 525,
         c: "#af7a28",
         bullets: [],
+        scan: function (){
+            if(turret2Built) {
+                if (this.y > 400 && goUp1) {
+                    goUp1 = true;
+                    goDown1 = false;
+                    this.y -= 2;
+                    this.laser.y -= 2;
+                } else {
+                    goUp1 = false;
+                    goDown1 = true;
+                }
+                if(this.y < 600 && goDown1){
+                    goUp1 = false;
+                    goDown1 = true;
+                    this.y += 2;
+                    this.laser.y += 2;
+                } else {
+                    goDown1 = false;
+                    goUp1 = true;
+                }
+            } else {
+                this.x = 215;
+                this.y = 525;
+            }
+        },
         auto: function (){
             if(turret2Built){
-                for(let i = 0; i < 10; i++) {
+                for(let i = 0; i < 5; i++) {
                     this.bullets.push(i);
                 }
             }
         },
         laser: {
-            x: 215,
-            y: 525,
+            x: 225,
+            y: 535,
             w: 1300,
             h: 10
         },
@@ -322,9 +370,8 @@
                 this.bullets.pop();
                 inTurret2Sights = false;
                 tBullet.updatePosition(this);
-                fill(this.laser.x, this.laser.y,this.laser.w, this.laser.h, "#ffffff");
+                fill(this.laser.x + boxSize, this.laser.y,this.laser.w, this.laser.h, "#ffffff");
                 tBullet.travel();
-                console.log(`T2 bullets: ${this.bullets.length}`);
             } else {
                 turret2Built = false
             }
@@ -375,15 +422,17 @@
             fill(supplies.x + boxSize / 4, supplies.y + boxSize / 5, boxSize / 2, boxSize / 3.5, "#423333");
         }
         if(turret1Built) {
-            fill(turret1.x, turret1.y, boxSize, boxSize, turret1.c);
-            fill(turret1.x + boxSize, turret1.y + boxSize / 2 - 5, boxSize / 1.5, 10, turret1.c);
-            fill(turret1.x + boxSize * 2 - 18, turret1.y + boxSize / 2 - 5, 4, 10, "#000000");
+            drawTurret(turret1)
         }
         if(turret2Built) {
-            fill(turret2.x, turret2.y, boxSize, boxSize, turret2.c);
-            fill(turret2.x + boxSize, turret2.y + boxSize / 2 - 5, boxSize / 1.5, 10, turret2.c);
-            fill(turret2.x + boxSize * 2 - 18, turret2.y + boxSize / 2 - 5, 4, 10, "#000000");
+            drawTurret(turret2)
         }
+    }
+
+    function drawTurret(turret){
+        fill(turret.x, turret.y, boxSize, boxSize, turret.c);
+        fill(turret.x + boxSize, turret.y + boxSize / 2 - 5, boxSize / 1.5, 10, turret.c);
+        fill(turret.x + boxSize * 2 - 18, turret.y + boxSize / 2 - 5, 4, 10, "#000000");
     }
 
 
@@ -393,9 +442,16 @@
         draw();
         player.shoot();
         wall.broken();
+        restartGame();
     }
 
-    setInterval(turretsTestingLog, 200)
+    setInterval(turretsTestingLog, 200);
+
+    let turretScanning = setInterval(turretScan, 200);
+    function turretScan(){
+        turret1.scan();
+        turret2.scan();
+    }
 
     function turretsTestingLog(){
         if(turret1Built) {
@@ -486,7 +542,7 @@
     function createZombiesArray(){
         for(let i = 0; i < amountOfZombies; i++){
             let zObj = {
-                x: zombie.x + (~~(Math.random() * 150) - 150),
+                x: zombie.x + (~~(Math.random() * 150) - 200),
                 y: ~~(Math.random() * 730) + 25
         }
             zArr.push(zObj);
@@ -506,7 +562,7 @@
 
     function moveZombies(){
         zArr.forEach(z => {
-            let zSpeed = ~~(Math.random() * 15) + 2;
+            let zSpeed = ~~(Math.random() * 12);
             if(z.x > 230) {
                 z.x -= zSpeed;
             } else {
@@ -519,11 +575,17 @@
                 gameOver = true;
                 gameInfoSpot[1].innerText = `GAME OVER ${killCount} ZOMBIES KILLED`;
                 gameInfoSpot[0].innerHTML = `<button id="restart">New Game(click a few times)</button>`;
-                $("#restart").on("click", function (){
-                    window.location.reload();
-                });
             }
         });
+    }
+
+    function restartGame(){
+        if(gameOver){
+            clearInterval(turretScanning);
+            $("#restart").on("click", function (){
+                window.location.reload();
+            });
+        }
     }
 
 
@@ -532,8 +594,8 @@
             if(contact(obj.x, obj.y, obj.s, z.x, z.y, zombie.size, zombie.r)){
                 killCount++;
                 updateStats();
-                z.x = spawnX + (~~(Math.random() * 100) - 100);
-                z.y =  ~~(Math.random() * 700) + 50;
+                z.x = spawnX + (~~(Math.random() * 100) - 200);
+                z.y =  ~~(Math.random() * 730) + 25;
                 bullet.x = 1000;
                 bullet.y = -100;
                 if(killCount % 2 === 0) {
