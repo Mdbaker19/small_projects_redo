@@ -35,12 +35,14 @@
         if(e.key === "1"){
             if(player.supplies > 0) {
                 turret1Built = true;
+                turretMechanics1();
                 player.supplies--;
             }
         }
         if(e.key === "2"){
             if(player.supplies > 0) {
                 turret2Built = true;
+                turretMechanics2();
                 player.supplies--;
             }
         }
@@ -66,6 +68,12 @@
         return ((py - (pHead * 2) < by + boxS && py + pBodyH + pLegs > by) && (px < bx + boxS && px + pBodyW > bx))
     }
 
+
+
+
+    //===============================//
+    //----------GAME OBJECTS---------//
+    //=================================//
 
     const wall = {
         x: 200,
@@ -94,7 +102,7 @@
         bodyH: 30,
         bodyW: 20,
         leg: 25,
-        supplies: 0,
+        supplies: 1,
         move: function (dir){
             switch (dir){
                 case "Up":
@@ -133,6 +141,14 @@
         }
     }
 
+
+
+
+
+    //===============================//
+    //----------PLAYER SHOTS-----------//
+    //=================================//
+
     let bulletArr = [];
     function createBullet(){
         bullet.updatePosition();
@@ -160,6 +176,10 @@
     }
 
 
+
+    //===============================//
+    //----------SUPPLIES---------------//
+    //=================================//
 
 
     const boxSize = 35;
@@ -201,17 +221,112 @@
         }
     }
 
+
+
+    //===============================//
+    //----------TURRETS---------------//
+    //=================================//
+
+    let inTurret1Sights = false;
+
+    function turretMechanics1(){
+        turret1.auto();
+    }
+    function turretMechanics2(){
+        turret2.auto();
+    }
+
     const turret1 = {
         x: 215,
         y: 125,
-        c: "#af7a28"
+        c: "#af7a28",
+        bullets: [],
+        auto: function (){
+            if(turret1Built){
+                for(let i = 0; i < 10; i++) {
+                    this.bullets.push(i);
+                }
+            }
+        },
+        laser: {
+            x: 215,
+            y: 130,
+            w: 1300,
+            h: 10
+        },
+        shooting: function(){
+            if(this.bullets.length > 1){
+                this.bullets.pop();
+                inTurret1Sights = false;
+                tBullet.updatePosition(this);
+                // circle(tBullet.x, tBullet.y, tBullet.s, "#000000");
+                fill(this.laser.x, this.laser.y,this.laser.w, this.laser.h, "#ffffff");
+                tBullet.travel();
+                console.log(this.bullets);
+            }
+        }
     }
+
+    function turretShootingAtZombies(turret){
+        zArr.forEach((z) => {
+            if(z.y + zombie.size > turret.y && z.y < turret.y + boxSize){
+                inTurret1Sights = true;
+                killCount++;
+                setTimeout(function (){
+                    z.x = spawnX + (~~(Math.random() * 100) - 100);
+                    // z.y =  140;
+                    z.y =  ~~(Math.random() * 700) + 50;
+                    }, 100);
+                if(killCount % 2 === 0) {
+                    createZombiesArray();
+                }
+            }
+        });
+    }
+
+
+
 
     const turret2 = {
         x: 215,
         y: 525,
-        c: "#af7a28"
+        c: "#af7a28",
+        bullets: [],
+        auto: function (){
+            if(turret1Built){
+                for(let i = 0; i < 10; i++) {
+                    this.bullets.push(i);
+                }
+            }
+        }
     }
+
+
+    const tBullet = {
+        x: null,
+        y: null,
+        s: 5,
+        travel: function (){
+            if(this.x < c.width){
+                missed = false;
+                this.x += 75;
+            } else {
+                missed = true;
+            }
+        },
+        updatePosition: function (turret){
+            this.x = turret.x;
+            this.y = turret.y
+        }
+    }
+
+
+
+
+    //===============================//
+    //-----DRAWING AND RUNNING GAME---//
+    //=================================//
+
 
     function drawTurretsAndBoxes(){
         if(!ammoGrabbed) {
@@ -250,6 +365,17 @@
         wall.broken();
     }
 
+    setInterval(turretsTestingLog, 200)
+
+    function turretsTestingLog(){
+        if(turret1Built) {
+            turretShootingAtZombies(turret1);
+        }
+        if(inTurret1Sights) {
+            turret1.shooting();
+        }
+    }
+
 
     setInterval(gameFunctions, 100);
 
@@ -259,7 +385,7 @@
         supplies.used();
         updateStats();
         moveZombies();
-        zHit();
+        zHit(bullet);
     }
     function updateStats(){
         gameInfoSpot[0].innerHTML = render();
@@ -306,6 +432,17 @@
     }
 
 
+
+
+
+
+
+
+    //===============================//
+    //----------ZOMBIES---------------//
+    //=================================//
+
+
     function createZombiesArray(){
         for(let i = 0; i < amountOfZombies; i++){
             let zObj = {
@@ -329,7 +466,7 @@
 
     function moveZombies(){
         zArr.forEach(z => {
-            let zSpeed = ~~(Math.random() * 15) + 5;
+            let zSpeed = ~~(Math.random() * 15) + 2;
             if(z.x > 230) {
                 z.x -= zSpeed;
             } else {
@@ -343,12 +480,13 @@
         });
     }
 
-    function zHit(){
+    function zHit(obj){
         zArr.forEach(z => {
-            if(contact(bullet.x, bullet.y, bullet.s, z.x, z.y, zombie.size, zombie.r)){
+            if(contact(obj.x, obj.y, obj.s, z.x, z.y, zombie.size, zombie.r)){
                 killCount++;
                 z.x = spawnX + (~~(Math.random() * 100) - 100);
-                z.y =  ~~(Math.random() * 700) + 50;
+                z.y =  140;
+                // z.y =  ~~(Math.random() * 700) + 50;
                 bullet.x = 1000;
                 bullet.y = -100;
                 if(killCount % 2 === 0) {
